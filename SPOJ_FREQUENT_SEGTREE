@@ -1,0 +1,140 @@
+
+/*.....................SPOJ............................
+...............FREQUENT.....................
+.........DEVELOPED BY adi1862.............
+...........25th April 2018, 7:25:53PM.......    
+*/
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long int ll; 
+//this structure is used to store multiple values like prefix suffix their count and length of the sequence
+struct node{
+    ll length;
+    ll frequency;
+    ll prefix;
+    ll suffix;
+    ll prefix_count;
+    ll suffix_count;
+};
+//dummy node
+node n={0,0,0,0,0,0};
+//maximum function
+ll max(ll a,ll b){
+    if(a>b)return a;
+    else return b;
+}
+void printnode(node nod)
+{
+    cout<<"LVAL="<<nod.prefix<<" "<<"LFREQ="<<nod.prefix_count<<endl;
+    cout<<"MAXVAL="<<nod.frequency<<endl;
+    cout<<"RVAL="<<nod.suffix<<" "<<"RFREQ="<<nod.suffix_count<<endl;
+}
+//MOST IMPORTANT FUCTION //
+// this is used to merge the nodes(left_child and right child) at various level..
+node merge(node left_child,node right_child){
+    node res;//new node
+    if(left_child.length==0)return right_child; // if there is no left_child then simply return right_child    
+    if(right_child.length==0)return left_child; // if there is no right_child then simply return left_child
+       
+    if(left_child.suffix==right_child.prefix){ // if left_child_suffix is same as right_child_prefix then
+        // and the sum of parent count is greater than children's respective frequencis then 
+        if((left_child.suffix_count+right_child.prefix_count)>left_child.frequency&&(left_child.suffix_count+right_child.prefix_count)>right_child.frequency){
+            res.frequency=left_child.suffix_count+right_child.prefix_count;
+        }
+        else    
+            res.frequency=max(left_child.frequency,right_child.frequency);
+    }
+    else    
+        res.frequency=max(left_child.frequency,right_child.frequency);
+     //for merging 11122 and 2222 type of child
+     if(right_child.prefix==left_child.suffix&&right_child.prefix_count==right_child.length){
+         right_child.suffix_count=left_child.suffix_count+right_child.length; 
+     }
+     // for merging 1111 1122 type of child
+     if(left_child.suffix==right_child.prefix&&left_child.prefix_count==left_child.length){
+        left_child.prefix_count=left_child.length+right_child.prefix_count;
+     }
+            //then simply assign the values       
+            res.length=left_child.length+right_child.length;
+            res.prefix=left_child.prefix;
+            res.suffix=right_child.suffix;
+            res.prefix_count=left_child.prefix_count;
+            res.suffix_count=right_child.suffix_count;
+    return res;
+}
+void build(ll a[],node seg[],ll low,ll high, ll pos){
+    if(low==high){
+        seg[pos].frequency=1;
+        seg[pos].suffix=a[low];
+        seg[pos].prefix=a[low];
+        seg[pos].prefix_count=1;
+        seg[pos].suffix_count=1;
+        seg[pos].length=1;
+        //cout<<"    Node at "<<pos<<endl;
+        //printnode(seg[pos]);
+        return ;
+    }
+    else{
+        ll mid=(low+high)/2;
+        build(a,seg,low,mid,2*pos+1);
+        build(a,seg,mid+1,high,2*pos+2);
+    }
+    
+    seg[pos]=merge(seg[2*pos+1],seg[2*pos+2]);
+    //cout<<"    Node at "<<pos<<endl;
+       // printnode(seg[pos]);
+}
+node query(node seg[],ll low,ll high,ll qlow,ll qhigh,ll pos){
+// Total overlap
+if(low>=qlow&&high<=qhigh)
+return seg[pos];
+//No overlap
+if(low>qhigh||high<qlow||low>high)
+return n;
+//Partial overlap
+ll mid=(low+high)/2;
+return merge(query(seg,low,mid,qlow,qhigh,2*pos+1),query(seg,mid+1,high,qlow,qhigh,2*pos+2));
+}
+
+int main() {
+	 ios_base::sync_with_stdio(0);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ll N=1,Q;
+	while(N!=0){
+    	cin>>N>>Q;
+    	if(N==0)break;
+    	ll A[N];
+    	ll x=pow(2,1+ceil(log2(N)))-1;
+    	node seg[x]={0,0,0,0,0,0};
+    	for(int i=0;i<N;i++)cin>>A[i];
+    	build(A,seg,0,N-1,0);
+    	while(Q!=0){
+    	    int p,q;
+    	    cin>>p>>q;
+    	    cout<<query(seg,0,N-1,p-1,q-1,0).frequency<<'\n';
+    	    
+    	    Q--;
+    	}
+	}
+	//for(int i=0;i<x;i++)cout<<seg[i].frequency<<" ";cout<<'\n';
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
