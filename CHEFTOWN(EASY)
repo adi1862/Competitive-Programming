@@ -1,0 +1,70 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long int ll; 
+ll minimum(ll a, ll b){
+    if(a>b)return b;
+    else return a;
+}
+ll maximum(ll a ,ll b){
+    if(a>b)return a;
+    else return b;
+}
+struct node{
+    ll max;
+    ll min;
+};
+node n={-1,1000000009};  
+void printnode(node s){
+    cout<<"MIN="<<s.min<<" MAX="<<s.max<<'\n';
+}
+void build(ll A[],node seg[] ,ll low,  ll high, ll pos){
+    if(low==high){
+        seg[pos].min=A[low];
+        seg[pos].max=A[low];
+        //cout<<"Node inserted at "<<pos<<'\n';
+        //printnode(seg[pos]);
+        return ;
+    }
+    ll mid = (low+high)/2;
+    build(A,seg,low, mid, 2*pos+1);
+    build(A,seg,mid+1, high, 2*pos+2);
+    seg[pos].min=minimum(seg[pos*2+1].min,seg[pos*2+2].min);
+    seg[pos].max=maximum(seg[pos*2+1].max,seg[pos*2+2].max);
+    //cout<<"Node inserted at "<<pos<<'\n';
+      //  printnode(seg[pos]);
+}
+node query(node seg[],ll low,ll high,ll qlow, ll qhigh,ll pos ){
+    if(qlow>high||qhigh<low||low>high)return n;
+    else if(qlow<=low&&qhigh>=high)return seg[pos];
+    ll mid=(low+high)/2;
+    node res; 
+    node r1=query(seg,low,mid,qlow ,qhigh,2*pos+1);
+    node r2=query(seg,mid+1,high,qlow ,qhigh,2*pos+2);
+    res.max=maximum(r1.max,r2.max);
+    res.min=minimum(r1.min,r2.min);
+    return res;
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(NULL);
+    cout.tie(NULL);
+    ll N,W;
+    cin>>N>>W;
+    ll A[N];
+    ll x=pow(2,1+ceil(log2(N+1)));
+    node seg[x];
+    for(int i=0;i<N;i++)cin>>A[i];
+    build(A,seg,0,N-1,0);
+    ll Ans=0;
+    for(int i=0;i<N-W+1;i++){
+        node ans=query(seg,0,N-1,i,i+W-1,0);
+        //printnode(ans);
+        if(ans.max-ans.min+1==W)Ans++;
+    }
+    cout<<Ans;
+	return 0;
+}
+
+
+
