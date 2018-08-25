@@ -1,0 +1,61 @@
+#include<bits/stdc++.h>
+using namespace std;
+typedef   int ll;
+void build(ll A[],ll seg[],ll low,ll high,ll pos){
+	
+	if(low==high){seg[pos]=A[low];return;}	
+	
+	ll mid=(low+high)/2;
+	
+	build(A,seg,low,mid,2*pos+1);
+	build(A,seg,mid+1,high,2*pos+2);
+	
+	seg[pos]=seg[2*pos+1]&seg[2*pos+2]; // This is for AND Operation 
+	
+
+}
+ll query(ll seg[],ll low,ll high,ll qlow,ll qhigh,ll pos){
+	
+	if(qlow>high||qhigh<low||low>high)return INT_MAX;//no overlap
+	
+	else if(qlow<=low && qhigh>=high)return seg[pos];
+	
+	ll mid=(low+high)/2;
+	return query(seg,low,mid,qlow,qhigh,2*pos+1)&query(seg,mid+1,high,qlow,qhigh,2*pos+2);
+}
+int main(){
+    ios::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
+	ll T;
+	cin>>T;
+	while(T--){
+		ll N,K;
+		cin>>N>>K;
+		ll A[N+9]={0};
+		//ll size=pow(2,ceil(log2(N+1)));
+		ll seg[100000];
+		for(int i=0;i<N;i++)cin>>A[i];
+			build(A,seg,0,N-1,0);
+		if(K>N)K=N;
+		ll final1,final2;
+		for(int i=0;i<N;i++){
+		    if((i+K)>=N){
+			    ll ans1=query(seg,0,N-1,i,N-1,0);
+			    ll ans2=query(seg,0,N-1,0,(i+K)%N,0);
+			     final1=ans1&ans2;
+			     
+		    }
+		    else final1=query(seg,0,N-1,i,i+K,0);
+		    if((i-K)<0){
+		        ll ans3=query(seg,0,N-1,0,i,0);
+		        ll ans4=query(seg,0,N-1,N-K+i,N-1,0);
+		         final2=ans3&ans4;
+		    }
+		    else final2=query(seg,0,N-1,i-K,i,0);
+		    
+		    printf("%d ",(final1&final2));
+		}	
+		printf("\n");
+	}
+	return 0;
+}
+
